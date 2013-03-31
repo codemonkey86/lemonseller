@@ -1,0 +1,16 @@
+Plan for experimental hw:  experimentation of Karp  vs. Howard algos for minimum mean cycle problem.  referece: http://lemon.cs.elte.hu/pub/doc/latest/a00607.html
+
+focus point:  Howard most efficient in practice, but exponential lower bound vs. polynomial of karp.
+
+Implement both, space/time as laid out in blackboard,  randomize generation of graph to get large set over which to compare results. maybe identify the exponential end case where Howard hs poly bound.
+
+At least discuss, if not code, comparision between using Lemon ListGraph vs. Static Graph, see:  http://lemon.cs.elte.hu/pub/tutorial/a00014.html
+
+Steps:
+  establish cost functions, display output from implementations of both algos
+  time space analysis
+  randomize graph generation
+  autonmate analysis to get results
+  explore tolerancce objects
+  compare with list graph if leftover time
+  5 page writeup
