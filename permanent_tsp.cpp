@@ -1,6 +1,6 @@
 /*
  * Building this:
- * g++ -o naive naive_tsp.cpp -lemon
+ * g++ -o permanent permanent_tsp.cpp -lemon
  */
 
 #include <iostream>
@@ -46,7 +46,7 @@ int main(int argc, char** argv){
   if( argc < 2 || argc > 3 )
     {
       cout << "Incorrect Usage:" << endl;
-      cout << "\tnaive size [- regular-ness (only 1 or 3 supported, 1 default)]" << endl;
+      cout << "\tpermanent size [- regular-ness (only 1 or 3 supported, 1 default)]" << endl;
       return -1;
     }
 	int size = atoi(argv[1]);
@@ -131,7 +131,7 @@ cout << g.id(nodes[0]) << endl;*/
   //iterate through all of the permutations
   //and compute the length of each tour
   //Save the minimum tour length and the minimum tour
-	vector<int> minimumPath = vector<int>(nodeCounter);
+	/*vector<int> minimumPath = vector<int>(nodeCounter);
 	int minimumCost = computePathCost(nodeCounter, &distances, edges);
 	//cout << "Initial minimum cost is " << minimumCost << endl;
 	
@@ -143,11 +143,11 @@ cout << g.id(nodes[0]) << endl;*/
 			minimumCost = newMin;
 			minimumPath = vector<int>(nodeCounter);
 		}
-	}
+	}*/
 	
 	//Compute the bound/check if our path is within it
 	//n is size of graph and k is k-regular-ness of it
-	int n = minimumPath.size();
+	int n = nodes.size();
 	int k = n - regular;
 	float bound = (1 + sqrt(64/log(k))) * n;
 	string bounded = "no"; 
