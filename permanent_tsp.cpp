@@ -4,7 +4,11 @@
  */
 
 #include <iostream>
-#include <lemon/list_graph.h> 
+#include <lemon/list_graph.h>
+#include <lemon/matching.h>
+#include <lemon/core.h>
+#include <lemon/kruskal.h>
+#include <lemon/euler.h>
 #include <fstream>
 #include <vector>
 #include <map>
@@ -28,6 +32,9 @@ typedef Graph::Edge Edge;
 typedef Graph::NodeIt NodeIt;
 typedef Graph::Node Node;
 typedef Graph::EdgeMap<int> LengthMap;
+typedef Graph::EdgeMap<bool> BoolMap;
+typedef Graph::NodeMap<Node> NodesMap;
+//typedef MaxMatching<Graph> MaxMatching;
 
 //Function prototypes
 void printEdgeMap(Graph*, LengthMap*);
@@ -38,6 +45,9 @@ int computePathCost(vector<int>, LengthMap*, map<pair<int, int>, Edge>);
 void printPath(vector<int>);
 
 set<pair<int, int> > removed;
+Graph tempGraph;
+LengthMap tempDistances(tempGraph);
+
 
 int main(int argc, char** argv){
   //the first argument will be the size of the input graph.
@@ -117,15 +127,131 @@ cout << g.id(nodes[0]) << endl;*/
       return result;
     }
 
-	vector<int> nodeCounter;
+	//Create a matching of our graph
+	MaxMatching<Graph> matching(tempGraph);
+	matching.init();
+	matching.run();
+	
+	
+	//Contract the edges in the matching
+	//in a duplicated graph
+	//for each edge e in graph
+	
+	//printEdgeMap(&tempGraph, &tempDistances);
+	for(EdgeIt e(tempGraph); e!=INVALID; ++e)
+	{
+		if(matching.matching(e))
+			tempGraph.contract(tempGraph.u(e), tempGraph.v(e));
+	}
+
+	//printEdgeMap(&tempGraph, &tempDistances);
+	
+	//All of the below is from failed attempts at using graphCopy
+	/*Graph temp;
+	GraphCopy<Graph, Graph> cg(g, temp);
+	Graph::EdgeMap<Edge> er(g);
+	Graph::NodeMap<Node> nr(g);
+	cg.edgeRef(er);
+	cg.nodeRef(nr);
+	cg.run();
+	
+	//graphCopy(g, temp);
+	LengthMap testDist(temp);*/
+	
+	//printEdgeMap(&g, &distances);
+	//printEdgeMap(&tempGraph, &tempDistances);
+	//graphCopy(src, trg).nodeRef(nr).edgeCrossRef(ecr).run();
+	
+	/*GraphCopy<Graph, Graph> cg(g, temp);
+	
+	
+	NodesMap nr(g);
+	cg.nodeRef();
+	LengthMap ecr(temp);
+	cg.edgeCrossRef(ecr);*/
+	//End failed attempts at graphCopy
+	
+	
+	//Compute minimum spanning tree of contracted graph
+	BoolMap tempBool(tempGraph);
+	vector<Edge> tree;
+	kruskal(tempGraph, tempDistances, back_inserter(tree));
+	/*for(int i = 0; i < tree.size(); ++i)
+	{
+	    cout << tempGraph.id(tempGraph.u(tree[i])) << "<->" << tempGraph.id(tempGraph.v(tree[i])) << endl;
+	}*/
+	
+	
+	//Combine two copies of the MST with the matching
+	//First, remove all the edges that aren't in the matching
+	for(EdgeIt e(g); e!=INVALID; ++e)
+	{
+		if(!matching.matching(e))
+			g.erase(e);
+	}
+	//Next, add all the edges that are in the MST, twice
+	for(int i = 0; i < tree.size(); ++i)
+	{
+		Node u = g.nodeFromId(tempGraph.id(tempGraph.u(tree[i])));
+		Node v = g.nodeFromId(tempGraph.id(tempGraph.v(tree[i])));
+		Edge newEdge = g.addEdge(u,v);
+		Edge newEdge2 = g.addEdge(v,u);
+		distances.set(newEdge, 1);
+		distances.set(newEdge2, 1);
+		edges.insert(make_pair(make_pair(tempGraph.id(tempGraph.u(tree[i])),tempGraph.id(tempGraph.v(tree[i]))), newEdge));
+	}
+	//printEdgeMap(&g, &distances);
+	
+	//First, create a graph with all of the nodes of the original
+	/*Graph final;
+	for(NodeIt n(g); n != INVALID; ++n)
+	{
+		
+	}
+	for(int i = 0; i < tree.size(); ++i)
+	{
+		Edge newEdge = tempGraph.addEdge(tempGraph.u(tree[i]), tempGraph.v(tree[i]));
+		Edge newEdge2 = tempGraph.addEdge(tempGraph.v(tree[i]), tempGraph.u(tree[i]));
+		tempDistances.set(newEdge, 1);
+		tempDistances.set(newEdge2, 1);
+	}
+	printEdgeMap(&tempGraph, &tempDistances);*/
+	
+	
+	//Find Eulerian Tour
+	//This is our TSP tour
+	vector<int> minimumPath;
+	set<int> traversed;
+	for(EulerIt<ListGraph> e(g); e!=INVALID; ++e) 
+	{
+		//if(traversed.find(g.id(g.u(Edge(e)))) == traversed.end())
+		{
+			//Haven't visited this node yet
+			minimumPath.push_back(g.id(g.u(Edge(e))));
+			traversed.insert(g.id(g.u(Edge(e))));
+		}
+		//else if(traversed.find(g.id(g.v(Edge(e)))) == traversed.end())
+		{
+			//already visited the previous node, haven't visited it's adjacent node
+			minimumPath.push_back(g.id(g.v(Edge(e))));
+			traversed.insert(g.id(g.v(Edge(e))));
+		}
+		//else
+			//This should only occur for the last edge.
+			continue;
+	}
+	int minimumCost = computePathCost(minimumPath, &distances, edges);
+
+	//Leftovers from naive, in case we need them
+	/*vector<int> nodeCounter;
 	
 	for(int i = 0; i < nodes.size(); ++i)
 	{
 		nodeCounter.push_back(i);
-	}
+	}*/
 
   //Sort the nodes so we're at the first permutation
-	sort(nodeCounter.begin(), nodeCounter.end());
+	//sort(nodeCounter.begin(), nodeCounter.end());
 
 
   //iterate through all of the permutations
@@ -230,6 +356,7 @@ int loadGraph(Graph *g, int size, vector<Node> *nodes, map<pair<int, int>, Edge>
   for(int i = 0; i < size; ++i)
     {
       nodes->push_back(g->addNode());
+	  tempGraph.addNode();
     }
 
 //LengthMap distances(*g);
@@ -241,14 +368,17 @@ int loadGraph(Graph *g, int size, vector<Node> *nodes, map<pair<int, int>, Edge>
     {
       //inFile >> weight;
 		Edge newEdge = g->addEdge(nodes->at(i),nodes->at(j));
+		Edge tempNewEdge = tempGraph.addEdge(nodes->at(i),nodes->at(j));
 		edges->insert(make_pair(make_pair(i,j), newEdge));
 		if(removed.find(make_pair(i,j)) != removed.end() || removed.find(make_pair(j,i)) != removed.end())
 		{
 			distances->set(newEdge, 2);
+			tempDistances.set(tempNewEdge, 2);
 		}
 		else
 		{
 			distances->set(newEdge,1);
+			tempDistances.set(tempNewEdge, 1);
 		}
 		//distances->set(newEdge, weight);
 		//distances->set(newEdge, weight);
