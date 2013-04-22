@@ -15,6 +15,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <set>
+#include<sys/resource.h>
+#include<sys/time.h>
+#include<sys/wait.h>
+#include<unistd.h>
 //#include <ifstream>
 //#include <lemon/concepts/graph.h>
 
@@ -36,13 +40,35 @@ void printNodes(Graph*, vector<Node>);
 bool nodeCompare(Node, Node);
 int computePathCost(vector<int>, LengthMap*, map<pair<int, int>, Edge>);
 void printPath(vector<int>);
-
+int run_naive(int, char**);
 set<pair<int, int> > removed;
+
+unsigned int maxStackLocation;
+unsigned int minStackLocation;
 
 int main(int argc, char** argv){
   //the first argument will be the size of the input graph.
-	
+  int child = fork();
+  int localVariable;
+  void* currPtrLocation = (void*)(&localVariable);
+  maxStackLocation = *(unsigned int*)(&currPtrLocation);
+  if (child == 0){
+    run_naive(argc, argv);
+    int who = RUSAGE_SELF;
+    struct rusage usage;
+    int ret;
+    ret = getrusage(who, &usage);
+    double cpu_time_used = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
+     cout << "RUN TIME: microseconds" << cpu_time_used << endl;
+     cout << "RUN TIME: seconds" << cpu_time_used / pow(10,6) << endl;
+  }
+  unsigned int space = maxStackLocation - minStackLocation;
+  wait(NULL);
+}
+
+int run_naive(int argc, char** argv){
   //Validate the agruments
+  
   if( argc < 2 || argc > 3 )
     {
       cout << "Incorrect Usage:" << endl;
