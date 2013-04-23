@@ -49,9 +49,6 @@ unsigned int minStackLocation;
 int main(int argc, char** argv){
   //the first argument will be the size of the input graph.
   int child = fork();
-  int localVariable;
-  void* currPtrLocation = (void*)(&localVariable);
-  maxStackLocation = *(unsigned int*)(&currPtrLocation);
   if (child == 0){
     run_naive(argc, argv);
     int who = RUSAGE_SELF;
@@ -59,16 +56,14 @@ int main(int argc, char** argv){
     int ret;
     ret = getrusage(who, &usage);
     double cpu_time_used = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
-     cout << "RUN TIME: microseconds" << cpu_time_used << endl;
-     cout << "RUN TIME: seconds" << cpu_time_used / pow(10,6) << endl;
-  }
-  unsigned int space = maxStackLocation - minStackLocation;
+     double seconds = usage.ru_utime.tv_sec + usage.ru_stime.tv_sec;
+     double microseconds = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
+     cout << "RUN TIME:" << seconds +  microseconds/pow(10,6) << endl;
+   }
   wait(NULL);
 }
 
 int run_naive(int argc, char** argv){
-  //Validate the agruments
-  
   if( argc < 2 || argc > 3 )
     {
       cout << "Incorrect Usage:" << endl;
