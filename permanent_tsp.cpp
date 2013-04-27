@@ -64,10 +64,12 @@ int main(int argc, char** argv){
     int ret;
     ret = getrusage(who, &usage);
     double cpu_time_used = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
-     double seconds = usage.ru_utime.tv_sec + usage.ru_stime.tv_sec;
-     double microseconds = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
-     cout << "RUN TIME:" << seconds +  microseconds/pow(10,6) << endl;
+    double seconds = usage.ru_utime.tv_sec + usage.ru_stime.tv_sec;
+    double microseconds = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
+    cout << "RUN TIME:" << seconds +  microseconds/pow(10,6) << endl;
    }
+   else
+     cout <<"ERROR FORKING";
   wait(NULL);
 }
 int run_permanent(int argc, char** argv){
@@ -260,7 +262,7 @@ cout << g.id(nodes[0]) << endl;*/
 			//This should only occur for the last edge.
 			continue;
 	}
-//	int minimumCost = computePathCost(minimumPath, &distances, edges);
+	int minimumCost = computePathCost(minimumPath, &distances, edges);
 
 	//Leftovers from naive, in case we need them
 	/*vector<int> nodeCounter;
@@ -297,14 +299,14 @@ cout << g.id(nodes[0]) << endl;*/
 	int k = n - regular;
 	float bound = (1 + sqrt(64/log(k))) * n;
 	string bounded = "no"; 
-	/*if( minimumCost <= bound )
+	if( minimumCost <= bound )
 	{
 		bounded = "yes";
 	}
 
 
   cout << "The minimum tour length of this graph is " << minimumCost << endl;
- */ cout << "The minimum tour of this graph is ";
+  cout << "The minimum tour of this graph is ";
   cout << endl;
   cout << "Tour within bounds: " << bounded << endl;
   
