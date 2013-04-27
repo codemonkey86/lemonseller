@@ -15,7 +15,7 @@
 # Based on valgrind, neither stack nor heap are guaranteed to be peak, but are guaranteed to have occured at approximately peak total memory consumption
 
 #TODO  set up inner/outer loop,  File write method  test/debug
-trials = 30
+trials = 3
 naive_time = []
 naive_memory = []
 naive_bounds = []
@@ -82,8 +82,8 @@ for x in 6..7
  	
 	  #accumulate and print mem usage to file
           naivef.write("#{stack},") #no endl
-          naivef.write("#{heap1.to_f+ heap2.to_f}") #endl
-          naive_stack_sum += stack.to_f
+          naivef.write("#{heap1.to_f+ heap2.to_f}\n") #endl
+          naive_stack_sum += stack.gsub(",","").to_i
           naive_heap_sum += heap1.to_f + heap2.to_f
 
 
@@ -106,7 +106,7 @@ for x in 6..7
           #parse for, print to file, and accumulate time info
           time = run.match(/RUN TIME:(.*)/)[1]
           permf.write("#{time},") #no endl
-          perm_time_sum += time
+          perm_time_sum += time.to_f
 
 	  #find out which massif.out.xxxx file is from child thread that did the work
 	  filenum = run.match(/PID:(.*)/)[1]
@@ -125,8 +125,8 @@ for x in 6..7
  	
 	  #accumulate and print mem usage to file
           permf.write("#{stack},") #no endl
-          permf.write("#{heap1.to_f+ heap2.to_f}") #endl
-          perm_stack_sum += stack
+          permf.write("#{heap1.to_f+ heap2.to_f}\n") #endl
+          perm_stack_sum += stack.to_f
           perm_heap_sum += heap1.to_f + heap2.to_f
 
         
@@ -134,11 +134,12 @@ for x in 6..7
         end # end of 30 iterations now get averages
        
        
-     
+        puts "naive sum" 
+        puts  naive_stack_sum
          
         
-        naivef.write("AVERAGES: #{naive_time_sum/trials},#{naive_stack_sum/trials},#{naive_heap_sum/trials},#{naive_bound_sum/trials}")
-        permf.write("AVERAGES: #{perm_time_sum/trials},#{perm_stack_sum/trails},#{perm_heap_sum/trails},#{perm_bound_sum/trials}")
+        naivef.write("AVERAGES: #{naive_time_sum/j},#{naive_stack_sum/j},#{naive_heap_sum/j},#{naive_bound_sum.to_f/j.to_f}")
+        permf.write("AVERAGES: #{perm_time_sum/j},#{perm_stack_sum/j},#{perm_heap_sum/j},#{perm_bound_sum.to_f/j.to_f}")
        
    end
 
