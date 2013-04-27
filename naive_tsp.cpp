@@ -53,6 +53,7 @@ int main(int argc, char** argv){
     run_naive(argc, argv);
     int who = RUSAGE_SELF;
     struct rusage usage;
+    cout << "PID:" << getpid() << endl;
     int ret;
     ret = getrusage(who, &usage);
     double cpu_time_used = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;

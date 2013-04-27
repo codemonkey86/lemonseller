@@ -19,6 +19,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <set>
+#include<sys/resource.h>
+#include<sys/time.h>
+#include<sys/wait.h>
+#include<unistd.h>
 //#include <ifstream>
 //#include <lemon/concepts/graph.h>
 
@@ -38,6 +42,7 @@ typedef Graph::NodeMap<Node> NodesMap;
 
 //Function prototypes
 void printEdgeMap(Graph*, LengthMap*);
+int run_permanent(int, char**);
 int loadGraph(Graph*, int, vector<Node>*, map<pair<int, int>, Edge>*, LengthMap*);
 void printNodes(Graph*, vector<Node>);
 bool nodeCompare(Node, Node);
@@ -48,10 +53,26 @@ set<pair<int, int> > removed;
 Graph tempGraph;
 LengthMap tempDistances(tempGraph);
 
-
 int main(int argc, char** argv){
   //the first argument will be the size of the input graph.
-	
+  int child = fork();
+  if (child == 0){
+    run_permanent(argc, argv);
+    int who = RUSAGE_SELF;
+    struct rusage usage;
+    cout << "PID:" << getpid() << endl;
+    int ret;
+    ret = getrusage(who, &usage);
+    double cpu_time_used = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
+     double seconds = usage.ru_utime.tv_sec + usage.ru_stime.tv_sec;
+     double microseconds = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
+     cout << "RUN TIME:" << seconds +  microseconds/pow(10,6) << endl;
+   }
+  wait(NULL);
+}
+int run_permanent(int argc, char** argv){
+  //the first argument will be the size of the input graph.
+   cout << "main";
   //Validate the agruments
   if( argc < 2 || argc > 3 )
     {
@@ -126,7 +147,7 @@ cout << g.id(nodes[0]) << endl;*/
       cout << "Problem opening input file." << endl;
       return result;
     }
-
+        cout << "testing";
 	//Create a matching of our graph
 	MaxMatching<Graph> matching(tempGraph);
 	matching.init();
@@ -215,8 +236,7 @@ cout << g.id(nodes[0]) << endl;*/
 		tempDistances.set(newEdge, 1);
 		tempDistances.set(newEdge2, 1);
 	}
-	printEdgeMap(&tempGraph, &tempDistances);*/
-	
+*/	
 	
 	//Find Eulerian Tour
 	//This is our TSP tour
@@ -240,7 +260,7 @@ cout << g.id(nodes[0]) << endl;*/
 			//This should only occur for the last edge.
 			continue;
 	}
-	int minimumCost = computePathCost(minimumPath, &distances, edges);
+//	int minimumCost = computePathCost(minimumPath, &distances, edges);
 
 	//Leftovers from naive, in case we need them
 	/*vector<int> nodeCounter;
@@ -277,15 +297,14 @@ cout << g.id(nodes[0]) << endl;*/
 	int k = n - regular;
 	float bound = (1 + sqrt(64/log(k))) * n;
 	string bounded = "no"; 
-	if( minimumCost <= bound )
+	/*if( minimumCost <= bound )
 	{
 		bounded = "yes";
 	}
 
 
   cout << "The minimum tour length of this graph is " << minimumCost << endl;
-  cout << "The minimum tour of this graph is ";
-  printPath(minimumPath);
+ */ cout << "The minimum tour of this graph is ";
   cout << endl;
   cout << "Tour within bounds: " << bounded << endl;
   
