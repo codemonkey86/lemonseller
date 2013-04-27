@@ -150,6 +150,7 @@ cout << g.id(nodes[0]) << endl;*/
       return result;
     }
         cout << "testing";
+        
 	//Create a matching of our graph
 	MaxMatching<Graph> matching(tempGraph);
 	matching.init();
@@ -160,7 +161,7 @@ cout << g.id(nodes[0]) << endl;*/
 	//in a duplicated graph
 	//for each edge e in graph
 	
-	//printEdgeMap(&tempGraph, &tempDistances);
+	printEdgeMap(&tempGraph, &tempDistances);
 	for(EdgeIt e(tempGraph); e!=INVALID; ++e)
 	{
 		if(matching.matching(e))
@@ -244,24 +245,34 @@ cout << g.id(nodes[0]) << endl;*/
 	//This is our TSP tour
 	vector<int> minimumPath;
 	set<int> traversed;
-	for(EulerIt<ListGraph> e(g); e!=INVALID; ++e) 
+	for(EulerIt<ListGraph> e(g); e!=INVALID; e++) 
 	{
-		//if(traversed.find(g.id(g.u(Edge(e)))) == traversed.end())
+                cout << "LOOPING";
+		if(traversed.find(g.id(g.u(Edge(e)))) == traversed.end())
 		{
 			//Haven't visited this node yet
+			//minimumPath.push_back(g.id(g.v(Edge(e))));
+			//traversed.insert(g.id(g.v(Edge(e))));
 			minimumPath.push_back(g.id(g.u(Edge(e))));
 			traversed.insert(g.id(g.u(Edge(e))));
 		}
-		//else if(traversed.find(g.id(g.v(Edge(e)))) == traversed.end())
-		{
+	       if(traversed.find(g.id(g.v(Edge(e)))) == traversed.end())
+		{		
+			
 			//already visited the previous node, haven't visited it's adjacent node
 			minimumPath.push_back(g.id(g.v(Edge(e))));
 			traversed.insert(g.id(g.v(Edge(e))));
 		}
-		//else
+		else
+                  continue;
 			//This should only occur for the last edge.
-			continue;
+                       
 	}
+        set<int>::iterator it;
+         for(it = traversed.begin(); it != traversed.end(); it++)
+    {
+        cout << *it << endl;
+    }
 	int minimumCost = computePathCost(minimumPath, &distances, edges);
 
 	//Leftovers from naive, in case we need them
@@ -307,6 +318,7 @@ cout << g.id(nodes[0]) << endl;*/
 
   cout << "The minimum tour length of this graph is " << minimumCost << endl;
   cout << "The minimum tour of this graph is ";
+  printPath(minimumPath);
   cout << endl;
   cout << "Tour within bounds: " << bounded << endl;
   
@@ -422,26 +434,27 @@ bool nodeCompare(Node i, Node j)
 int computePathCost(vector<int> path, LengthMap *distances, map<pair<int, int>, Edge > edges)
 {
 	int sum = 0;
-	//cout << "Computing cost of path size " << path.size() << endl;
+	cout << "Computing cost of path size " << path.size() << endl;
+
 	for(int i = 0; i < (path.size()-1); ++i)
 	{
 		if(path[i] < path[i+1])
 		{
-			sum += (*distances)[edges[make_pair(path[i],path[i+1])]];
+			sum = sum +  (*distances)[edges[make_pair(path[i],path[i+1])]];
 		}
 		else
 		{
-			sum += (*distances)[edges[make_pair(path[i+1],path[i])]];
+			sum  = sum +  (*distances)[edges[make_pair(path[i+1],path[i])]];
 		}
 	}
 	//Compute edge to return to source
 	if(path[path.size()-1] < path[0])
 	{
-		sum += (*distances)[edges[make_pair(path[path.size()-1],path[0])]];
+		sum = sum + (*distances)[edges[make_pair(path[path.size()-1],path[0])]];
 	}
 	else
 	{
-		sum += (*distances)[edges[make_pair(path[0],path[path.size()-1])]];
+		sum = sum +  (*distances)[edges[make_pair(path[0],path[path.size()-1])]];
 	}
 	
 	return sum;
