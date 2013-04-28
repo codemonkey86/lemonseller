@@ -74,7 +74,7 @@ int main(int argc, char** argv){
 }
 int run_permanent(int argc, char** argv){
   //the first argument will be the size of the input graph.
-   cout << "main";
+   
   //Validate the agruments
   if( argc < 2 || argc > 3 )
     {
@@ -102,54 +102,50 @@ int run_permanent(int argc, char** argv){
 				removed.insert(make_pair(vertices[i],vertices[i+1]));
 			}
 			removed.insert(make_pair(vertices[vertices.size()-1],vertices[0]));
-			/*for( int i = 0; i < vertices.size(); ++i)
-			{
-				cout << vertices[i] << " ";
-			}
-			cout << endl;
-			for(set<pair<int, int> >::iterator it = removed.begin(); it != removed.end(); ++it)
-			{
-				cout << "(" << it->first << "," << it->second << "), ";
-			}
-			cout << endl;*/
+		
 		}
 	}
 
   //Load the graph  
   Graph g;
-
+  Graph g2;
+  vector<Node> nodes2;
+  map<pair<int,int>, Edge> edges2;
+  
   vector<Node> nodes;
   map<pair<int, int>, Edge> edges;
 
-  /*Node u = g.addNode();
-  Node v = g.addNode();
-  Node w = g.addNode();
-  Edge a = g.addEdge(u,v);
-  Edge b = g.addEdge(v,w);
-  Edge c = g.addEdge(w,u);*/
-
-/*nodes.push_back(u);
-nodes.push_back(v);
-nodes.push_back(w);
-
-cout << g.id(nodes[0]) << endl;*/
 
 
   LengthMap distances(g);
-
-
+  LengthMap distances2(g2);
+  cout << size;
   //cout << "Load graph" << endl;
   //Get all of the nodes of the graph and put it in a list
   int result = loadGraph(&g, size, &nodes, &edges, &distances);
-
+  printEdgeMap(&g, &distances);
     //printNodes(&g, nodes);
+  //admittedly this is a hack to have get around lemon's
+  //difficult copy/assignment mechanisms for edge maps 
+  // we want the original weights available for computing cost at the end 
+   int orig_weights[size*(size-1)/2][size*(size-1)/2];
+    for (int i =0; i < size*(size-1)/2; i++)
+      for (int j= 0; j < size*(size-1)/2; j++)
+        orig_weights[i][j] = 0;
+  for(EdgeIt i(g); i!=INVALID; ++i)
+  {
+      orig_weights[g.id(g.u(i))][g.id(g.v(i))] = (distances)[i];
+      cout << "WEIGHT: " << distances[i] << " " << g.id(g.u(i)) << " " << g.id(g.v(i)) << endl;
+ 
+  }
+
 
   if(result != 0)
     {
       cout << "Problem opening input file." << endl;
       return result;
     }
-        cout << "testing";
+        
         
 	//Create a matching of our graph
 	MaxMatching<Graph> matching(tempGraph);
@@ -161,39 +157,12 @@ cout << g.id(nodes[0]) << endl;*/
 	//in a duplicated graph
 	//for each edge e in graph
 	
-	printEdgeMap(&tempGraph, &tempDistances);
 	for(EdgeIt e(tempGraph); e!=INVALID; ++e)
 	{
 		if(matching.matching(e))
 			tempGraph.contract(tempGraph.u(e), tempGraph.v(e));
 	}
 
-	//printEdgeMap(&tempGraph, &tempDistances);
-	
-	//All of the below is from failed attempts at using graphCopy
-	/*Graph temp;
-	GraphCopy<Graph, Graph> cg(g, temp);
-	Graph::EdgeMap<Edge> er(g);
-	Graph::NodeMap<Node> nr(g);
-	cg.edgeRef(er);
-	cg.nodeRef(nr);
-	cg.run();
-	
-	//graphCopy(g, temp);
-	LengthMap testDist(temp);*/
-	
-	//printEdgeMap(&g, &distances);
-	//printEdgeMap(&tempGraph, &tempDistances);
-	//graphCopy(src, trg).nodeRef(nr).edgeCrossRef(ecr).run();
-	
-	/*GraphCopy<Graph, Graph> cg(g, temp);
-	
-	
-	NodesMap nr(g);
-	cg.nodeRef();
-	LengthMap ecr(temp);
-	cg.edgeCrossRef(ecr);*/
-	//End failed attempts at graphCopy
 	
 	
 	//Compute minimum spanning tree of contracted graph
@@ -224,22 +193,7 @@ cout << g.id(nodes[0]) << endl;*/
 		distances.set(newEdge2, 1);
 		edges.insert(make_pair(make_pair(tempGraph.id(tempGraph.u(tree[i])),tempGraph.id(tempGraph.v(tree[i]))), newEdge));
 	}
-	//printEdgeMap(&g, &distances);
 	
-	//First, create a graph with all of the nodes of the original
-	/*Graph final;
-	for(NodeIt n(g); n != INVALID; ++n)
-	{
-		
-	}
-	for(int i = 0; i < tree.size(); ++i)
-	{
-		Edge newEdge = tempGraph.addEdge(tempGraph.u(tree[i]), tempGraph.v(tree[i]));
-		Edge newEdge2 = tempGraph.addEdge(tempGraph.v(tree[i]), tempGraph.u(tree[i]));
-		tempDistances.set(newEdge, 1);
-		tempDistances.set(newEdge2, 1);
-	}
-*/	
 	
 	//Find Eulerian Tour
 	//This is our TSP tour
@@ -247,7 +201,7 @@ cout << g.id(nodes[0]) << endl;*/
 	set<int> traversed;
 	for(EulerIt<ListGraph> e(g); e!=INVALID; e++) 
 	{
-                cout << "LOOPING";
+               
 		if(traversed.find(g.id(g.u(Edge(e)))) == traversed.end())
 		{
 			//Haven't visited this node yet
@@ -268,47 +222,51 @@ cout << g.id(nodes[0]) << endl;*/
 			//This should only occur for the last edge.
                        
 	}
-        set<int>::iterator it;
-         for(it = traversed.begin(); it != traversed.end(); it++)
-    {
-        cout << *it << endl;
-    }
-	int minimumCost = computePathCost(minimumPath, &distances, edges);
-
-	//Leftovers from naive, in case we need them
-	/*vector<int> nodeCounter;
-	
-	for(int i = 0; i < nodes.size(); ++i)
+   
+         //this computing miin cost is admittedly hacky but seems to work!
+	int sum = 0;
+	//cout << "Computing cost of path size " << path.size() << endl;
+        cout << "PATH SIZE" << minimumPath.size() << orig_weights[0][4] << endl;
+	for(int i = 0; i < (minimumPath.size()-1); ++i)
 	{
-		nodeCounter.push_back(i);
-	}*/
-
-  //Sort the nodes so we're at the first permutation
-	//sort(nodeCounter.begin(), nodeCounter.end());
-
-
-  //iterate through all of the permutations
-  //and compute the length of each tour
-  //Save the minimum tour length and the minimum tour
-	/*vector<int> minimumPath = vector<int>(nodeCounter);
-	int minimumCost = computePathCost(nodeCounter, &distances, edges);
-	//cout << "Initial minimum cost is " << minimumCost << endl;
-	
-	while(next_permutation(nodeCounter.begin(), nodeCounter.end()))
-	{
-		int newMin = computePathCost(nodeCounter, &distances, edges);
-		if( newMin < minimumCost)
+		if(minimumPath[i] < minimumPath[i+1])
 		{
-			minimumCost = newMin;
-			minimumPath = vector<int>(nodeCounter);
+                    sum += orig_weights[minimumPath[i]][minimumPath[i+1]];
+		//	sum = sum +  (*distances)[edges[make_pair(path[i],path[i+1])]];
+			cout << minimumPath[i] << " " << minimumPath[i+1]<< " " << orig_weights[minimumPath[i]][minimumPath[i+1]] << endl;
 		}
-	}*/
+		else
+		{
+                       sum += orig_weights[minimumPath[i+1]][minimumPath[i]];
+                        
+		//	sum  = sum +  (*distances)[edges[make_pair(path[i+1],path[i])]];
+                        cout << minimumPath[i+1] << " " << minimumPath[i] << " " << orig_weights[minimumPath[i+1]][minimumPath[i]] << endl;
+		}
+	}
+        cout << "SUMMING: " << sum << endl;
+	
+              sum += orig_weights[minimumPath[0]][minimumPath.size()-1];
+	
+
+
+
+
+
+
+
+
+
+        int minimumCost = sum;
+
 	
 	//Compute the bound/check if our path is within it
 	//n is size of graph and k is k-regular-ness of it
 	int n = nodes.size();
 	int k = n - regular;
-	float bound = (1 + sqrt(64/log(k))) * n;
+        cout << n << endl;
+        cout << k << endl;
+	float bound = (1 + sqrt(64/log(k))) * n; 
+        cout << bound;
 	string bounded = "no"; 
 	if( minimumCost <= bound )
 	{
@@ -322,19 +280,7 @@ cout << g.id(nodes[0]) << endl;*/
   cout << endl;
   cout << "Tour within bounds: " << bounded << endl;
   
-  /*cout << "Hello World! This is the LEMON library here." << endl;
-  cout << "We have a directed graph with " << countNodes(g) << " nodes "
-       << "and " << countEdges(g) << " arc." << endl;*/
-  
-  /*distances[a] = 5;
-  distances[b] = 3;
-  distances[c] = 1;*/
-  
-  //printEdgeMap(&g, &distances);
-
-	//for att_48, should return 4727
-	//cout << "0<->1=" << distances[edges[make_pair(0,1)]] << endl;
-
+ 
   return 0;
 }
 
@@ -360,30 +306,13 @@ void printNodes(Graph *g, vector<Node> nodes)
 
 int loadGraph(Graph *g, int size, vector<Node> *nodes, map<pair<int, int>, Edge> *edges, LengthMap *distances)
 {
-  //Change this vector to be an input parameter by reference
-  //cout << "Initializing vector" << endl;
-  //vector <Node> nodes;
-  
-  //cout << "Opening file" << endl;
-
-  //ifstream inFile;
-  //inFile.open(input);
-
-  //cout << "Opened file" << endl;
-  /*if(!inFile.is_open())
-    {
-      return -1;
-    }*/
-  //cout << "Checked if open" << endl;
+ 
 
   //Get size of graph
   //int size = 0;
   float weight = 0;
 
-  //cout << "Assigned initial values" << endl;
-
-  //inFile >> size;
-  //cout << "Size is: " << size << endl;
+  
 
   //Initialize graph
   for(int i = 0; i < size; ++i)
@@ -399,7 +328,7 @@ int loadGraph(Graph *g, int size, vector<Node> *nodes, map<pair<int, int>, Edge>
     {
       for( int j = i+1; j < size; ++j)
     {
-      //inFile >> weight;
+      
 		Edge newEdge = g->addEdge(nodes->at(i),nodes->at(j));
 		Edge tempNewEdge = tempGraph.addEdge(nodes->at(i),nodes->at(j));
 		edges->insert(make_pair(make_pair(i,j), newEdge));
@@ -413,15 +342,12 @@ int loadGraph(Graph *g, int size, vector<Node> *nodes, map<pair<int, int>, Edge>
 			distances->set(newEdge,1);
 			tempDistances.set(tempNewEdge, 1);
 		}
-		//distances->set(newEdge, weight);
-		//distances->set(newEdge, weight);
-      //cout << weight << " ";
+	
     }
-      //cout << endl;
+      
     }
 
-  //Close our input file
-  //inFile.close();
+
 
   return 0;
 }
@@ -430,35 +356,7 @@ bool nodeCompare(Node i, Node j)
 {
 	return (i<j);
 }
-    
-int computePathCost(vector<int> path, LengthMap *distances, map<pair<int, int>, Edge > edges)
-{
-	int sum = 0;
-	cout << "Computing cost of path size " << path.size() << endl;
 
-	for(int i = 0; i < (path.size()-1); ++i)
-	{
-		if(path[i] < path[i+1])
-		{
-			sum = sum +  (*distances)[edges[make_pair(path[i],path[i+1])]];
-		}
-		else
-		{
-			sum  = sum +  (*distances)[edges[make_pair(path[i+1],path[i])]];
-		}
-	}
-	//Compute edge to return to source
-	if(path[path.size()-1] < path[0])
-	{
-		sum = sum + (*distances)[edges[make_pair(path[path.size()-1],path[0])]];
-	}
-	else
-	{
-		sum = sum +  (*distances)[edges[make_pair(path[0],path[path.size()-1])]];
-	}
-	
-	return sum;
-}
 
 void printPath(vector<int> path)
 {
