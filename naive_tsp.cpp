@@ -91,16 +91,7 @@ int run_naive(int argc, char** argv){
 				removed.insert(make_pair(vertices[i],vertices[i+1]));
 			}
 			removed.insert(make_pair(vertices[vertices.size()-1],vertices[0]));
-			/*for( int i = 0; i < vertices.size(); ++i)
-			{
-				cout << vertices[i] << " ";
-			}
-			cout << endl;
-			for(set<pair<int, int> >::iterator it = removed.begin(); it != removed.end(); ++it)
-			{
-				cout << "(" << it->first << "," << it->second << "), ";
-			}
-			cout << endl;*/
+			
 		}
 	}
 
@@ -110,24 +101,12 @@ int run_naive(int argc, char** argv){
   vector<Node> nodes;
   map<pair<int, int>, Edge> edges;
 
-  /*Node u = g.addNode();
-  Node v = g.addNode();
-  Node w = g.addNode();
-  Edge a = g.addEdge(u,v);
-  Edge b = g.addEdge(v,w);
-  Edge c = g.addEdge(w,u);*/
 
-/*nodes.push_back(u);
-nodes.push_back(v);
-nodes.push_back(w);
-
-cout << g.id(nodes[0]) << endl;*/
 
 
   LengthMap distances(g);
 
 
-  //cout << "Load graph" << endl;
   //Get all of the nodes of the graph and put it in a list
   int result = loadGraph(&g, size, &nodes, &edges, &distances);
 
@@ -185,18 +164,6 @@ cout << g.id(nodes[0]) << endl;*/
   cout << endl;
   cout << "Tour within bounds: " << bounded << endl;
   
-  /*cout << "Hello World! This is the LEMON library here." << endl;
-  cout << "We have a directed graph with " << countNodes(g) << " nodes "
-       << "and " << countEdges(g) << " arc." << endl;*/
-  
-  /*distances[a] = 5;
-  distances[b] = 3;
-  distances[c] = 1;*/
-  
-  //printEdgeMap(&g, &distances);
-
-	//for att_48, should return 4727
-	//cout << "0<->1=" << distances[edges[make_pair(0,1)]] << endl;
 
   return 0;
 }
@@ -223,30 +190,7 @@ void printNodes(Graph *g, vector<Node> nodes)
 
 int loadGraph(Graph *g, int size, vector<Node> *nodes, map<pair<int, int>, Edge> *edges, LengthMap *distances)
 {
-  //Change this vector to be an input parameter by reference
-  //cout << "Initializing vector" << endl;
-  //vector <Node> nodes;
   
-  //cout << "Opening file" << endl;
-
-  //ifstream inFile;
-  //inFile.open(input);
-
-  //cout << "Opened file" << endl;
-  /*if(!inFile.is_open())
-    {
-      return -1;
-    }*/
-  //cout << "Checked if open" << endl;
-
-  //Get size of graph
-  //int size = 0;
-  float weight = 0;
-
-  //cout << "Assigned initial values" << endl;
-
-  //inFile >> size;
-  //cout << "Size is: " << size << endl;
 
   //Initialize graph
   for(int i = 0; i < size; ++i)

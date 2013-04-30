@@ -108,9 +108,7 @@ int run_permanent(int argc, char** argv){
 
   //Load the graph  
   Graph g;
-  Graph g2;
-  vector<Node> nodes2;
-  map<pair<int,int>, Edge> edges2;
+ 
   
   vector<Node> nodes;
   map<pair<int, int>, Edge> edges;
@@ -118,7 +116,6 @@ int run_permanent(int argc, char** argv){
 
 
   LengthMap distances(g);
-  LengthMap distances2(g2);
   cout << size;
   //cout << "Load graph" << endl;
   //Get all of the nodes of the graph and put it in a list
@@ -135,8 +132,7 @@ int run_permanent(int argc, char** argv){
   for(EdgeIt i(g); i!=INVALID; ++i)
   {
       orig_weights[g.id(g.u(i))][g.id(g.v(i))] = (distances)[i];
-      cout << "WEIGHT: " << distances[i] << " " << g.id(g.u(i)) << " " << g.id(g.v(i)) << endl;
- 
+     
   }
 
 
@@ -226,24 +222,24 @@ int run_permanent(int argc, char** argv){
          //this computing miin cost is admittedly hacky but seems to work!
 	int sum = 0;
 	//cout << "Computing cost of path size " << path.size() << endl;
-        cout << "PATH SIZE" << minimumPath.size() << orig_weights[0][4] << endl;
+       
 	for(int i = 0; i < (minimumPath.size()-1); ++i)
 	{
 		if(minimumPath[i] < minimumPath[i+1])
 		{
                     sum += orig_weights[minimumPath[i]][minimumPath[i+1]];
 		//	sum = sum +  (*distances)[edges[make_pair(path[i],path[i+1])]];
-			cout << minimumPath[i] << " " << minimumPath[i+1]<< " " << orig_weights[minimumPath[i]][minimumPath[i+1]] << endl;
+			
 		}
 		else
 		{
                        sum += orig_weights[minimumPath[i+1]][minimumPath[i]];
                         
 		//	sum  = sum +  (*distances)[edges[make_pair(path[i+1],path[i])]];
-                        cout << minimumPath[i+1] << " " << minimumPath[i] << " " << orig_weights[minimumPath[i+1]][minimumPath[i]] << endl;
+                       
 		}
 	}
-        cout << "SUMMING: " << sum << endl;
+      
 	
               sum += orig_weights[minimumPath[0]][minimumPath.size()-1];
 	
@@ -263,10 +259,9 @@ int run_permanent(int argc, char** argv){
 	//n is size of graph and k is k-regular-ness of it
 	int n = nodes.size();
 	int k = n - regular;
-        cout << n << endl;
-        cout << k << endl;
+       
 	float bound = (1 + sqrt(64/log(k))) * n; 
-        cout << bound;
+       
 	string bounded = "no"; 
 	if( minimumCost <= bound )
 	{
@@ -274,7 +269,7 @@ int run_permanent(int argc, char** argv){
 	}
 
 
-  cout << "The minimum tour length of this graph is " << minimumCost << endl;
+  cout << endl << "The minimum tour length of this graph is " << minimumCost << endl;
   cout << "The minimum tour of this graph is ";
   printPath(minimumPath);
   cout << endl;
@@ -286,11 +281,10 @@ int run_permanent(int argc, char** argv){
 
 void printEdgeMap(Graph *g, LengthMap *edges)
 {
-  cout << "Printing edges!" << endl;
   for(EdgeIt i(*g); i!=INVALID; ++i)
   {
-    cout << g->id(g->u(i)) << "<->" << g->id(g->v(i))
-     << "=" << (*edges)[i] << endl;
+   // cout << g->id(g->u(i)) << "<->" << g->id(g->v(i))
+     //<< "=" << (*edges)[i] << endl;
   }
   return;
 }
