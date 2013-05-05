@@ -29,7 +29,53 @@ int main () {
     int numvertices = 15000;
    
     time_t begin_karp, end_karp, begin_howard, end_howard;
-	
+
+    cout << "Number of extra arcs: " << numarcs << endl;
+    cout << "Number of vertices: " << numvertices << endl;
+   
+    // Start with line from 0 -> 1 -> ... -> (numvertices - 1)
+    // this insures the graph is connected
+    if (DEBUG) cout << "Building line graph" << endl;
+    for (int i = 0; i < numvertices - 1; i++) {
+        temp_vector.push_back(std::make_pair(i, i+1));
+    }
+
+    // Adds arcs of random source and target
+    if (DEBUG) cout << "Adding extra arcs" << endl;
+    for (int i = 0; i < numarcs; i++) {
+        temp_vector.push_back(std::make_pair(rand() % numvertices, rand() % numvertices));
+    }
+
+    // Removing duplicates and self-loops
+    if (DEBUG) cout << "Sorting arcs" << endl;
+    std::sort(temp_vector.begin(), temp_vector.end());
+    if (DEBUG) cout << "Removing duplicate arcs" << endl;
+    temp_vector.erase(unique(temp_vector.begin(), temp_vector.end()), temp_vector.end());
+    if (DEBUG) cout << "Removing self-loops" << endl;
+    for (std::vector< std::pair<int,int> >::iterator it=temp_vector.begin(); it!=temp_vector.end(); ++it){
+        if (it->first != it->second) {
+            arcs.push_back(std::make_pair(it->first, it->second));
+            real_numarcs++;
+        }
+    }
+    if (DEBUG) {
+        cout << "List of arcs" << endl;
+        for (std::vector< std::pair<int,int> >::iterator it=arcs.begin(); it!=arcs.end(); ++it){
+            cout << "(" << it->first << "," << it->second << ")" << endl;
+        }
+    }
+    cout << "Number of arcs: " << real_numarcs << endl;
+  
+    StaticDigraph gr;
+    gr.build(numvertices, arcs.begin(), arcs.end());
+    StaticDigraph::ArcMap<int> map(gr);
+
+    // Adding random weights
+    if (DEBUG) cout << "Adding weights to arcs" << endl;
+    for (int i = 0; i < real_numarcs; i++) {
+        map[gr.arc(i)] = (rand() % 10) + 1;
+    }
+
     time(&begin_howard);
     cout << endl << "---------- Howard ----------" << endl;
     HowardMmc<StaticDigraph, StaticDigraph::ArcMap<int> > howard_algo(gr, map);
@@ -40,6 +86,7 @@ int main () {
             Path<StaticDigraph> howard_path = howard_algo.cycle();
             cout << endl << "Howard path:";
             for (int i=0; i < howard_path.length(); i++){
+
                 cout<< endl << i + 1 << "-ARC from " << gr.id(gr.source(howard_path.nth(i))) << " to " << gr.id(gr.target(howard_path.nth(i)));
             }
             cout << endl;
@@ -54,6 +101,7 @@ int main () {
     cout << endl << "----------- Karp -----------" << endl;
     KarpMmc<StaticDigraph, StaticDigraph::ArcMap<int> > karp_algo(gr, map);
     if (karp_algo.run()){
+
         cout << "\tCost -- Arcs -- MMC" << endl;
         cout << "Karp:\t" << karp_algo.cycleCost() << "\t" << karp_algo.cycleSize() << "\t" << karp_algo.cycleMean() << endl;
         if (PATH_INFO) {
@@ -69,6 +117,6 @@ int main () {
     }
     time(&end_karp);
     cout << "Time elapsed: " << difftime(end_karp, begin_karp) << endl;
-   
+
     //TODO maybe compare with ListGraph, explore tolerancce
 }
